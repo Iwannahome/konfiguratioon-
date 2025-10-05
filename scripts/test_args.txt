@@ -1,0 +1,5 @@
+# Тестовый скрипт для проверки аргументов
+ls
+cd /tmp
+unknown_command_here
+ls -la -h

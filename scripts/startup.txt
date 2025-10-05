@@ -1,0 +1,8 @@
+# Мой стартовый скрипт для эмулятора
+ls -la
+cd /home/user
+ls
+pwd
+invalid_command test
+cd /etc
+ls -l

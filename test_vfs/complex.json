@@ -1,0 +1,25 @@
+{
+  "name": "complex_vfs",
+  "type": "directory",
+  "content": [
+    {
+      "name": "home",
+      "type": "directory", 
+      "content": [
+        {
+          "name": "user",
+          "type": "directory",
+          "content": [
+            {
+              "name": "documents",
+              "type": "directory",
+              "content": [
+                {"name": "readme.txt", "type": "file", "content": "Добро пожаловать!"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
