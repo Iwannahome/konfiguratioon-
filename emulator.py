@@ -33,45 +33,70 @@ class ShellEmulator:
         args = parts[1:]
         return command, args
 
-    def execute_startup_script(self):
-        """Выполнение стартового скрипта"""
-        if not self.startup_script:
-            return
-        
-        print(f"\n=== Выполнение стартового скрипта: {self.startup_script} ===")
-        
+    def execute_command(self, command, args):
+        """Выполнение одной команды"""
+        if command == "exit":
+            return "exit"
+        elif command == "ls":
+            print(f"Команда 'ls'. Аргументы: {args}")
+            return True
+        elif command == "cd":
+            print(f"Команда 'cd'. Аргументы: {args}")
+            return True
+        else:
+            print(f"ОШИБКА: Неизвестная команда '{command}' - строка пропущена")
+            return False
+
+    def execute_script(self, script_path):
+        """Выполняет команды из скрипт-файла с поддержкой комментариев"""
         try:
-            with open(self.startup_script, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-        except FileNotFoundError:
-            print(f"ОШИБКА: Скрипт '{self.startup_script}' не найден!")
-            return
-        except Exception as e:
-            print(f"ОШИБКА: Не удалось прочитать скрипт: {e}")
-            return
-
-        for line_num, line in enumerate(lines, 1):
-            line = line.strip()
-            if not line:  # Пропускаем пустые строки
-                continue
-                
-            print(f"\n[{line_num}] {line}")  # Показываем ввод
-            command, args = self.parse_input(line)
+            if not os.path.exists(script_path):
+                print(f"ОШИБКА: Скрипт {script_path} не найден")
+                return
             
-            if command is None:
-                continue
+            print(f"\n=== Выполнение стартового скрипта: {script_path} ===\n")
+            
+            with open(script_path, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+            
+            for i, line in enumerate(lines, 1):
+                line = line.strip()
                 
-            # Выполняем команду (имитируем выполнение)
-            if command == "exit":
-                print("Команда exit проигнорирована в скрипте")
-            elif command == "ls":
-                print(f"Команда 'ls'. Аргументы: {args}")
-            elif command == "cd":
-                print(f"Команда 'cd'. Аргументы: {args}")
-            else:
-                print(f"ОШИБКА: Неизвестная команда '{command}' - строка пропущена")
+                # Пропускаем пустые строки и комментарии
+                if not line:
+                    print(f"[{i}] (пустая строка)")
+                    continue
+                
+                if line.startswith('#'):
+                    print(f"[{i}] {line}")
+                    print("# Комментарий пропущен")
+                    continue
+                
+                print(f"[{i}] {line}")
+                
+                # Разбиваем на команду и аргументы
+                parts = line.split()
+                if not parts:
+                    continue
+                    
+                command = parts[0]
+                args = parts[1:] if len(parts) > 1 else []
+                
+                # Выполняем команду
+                success = self.execute_command(command, args)
+                
+                if not success:
+                    print(f"ОШИБКА: Не удалось выполнить команду '{command}' - строка пропущена")
+            
+            print("\n=== Завершение выполнения стартового скрипта ===")
+            
+        except Exception as e:
+            print(f"ОШИБКА во время исполнения скрипта: {str(e)}")
 
-        print("=== Завершение выполнения стартового скрипта ===\n")
+    def execute_startup_script(self):
+        """Выполняет стартовый скрипт если он указан"""
+        if self.startup_script:
+            self.execute_script(self.startup_script)
 
     def run_interactive(self):
         """Запуск интерактивного режима"""
@@ -96,15 +121,10 @@ class ShellEmulator:
             if command is None:
                 continue
 
-            if command == "exit":
+            result = self.execute_command(command, args)
+            if result == "exit":
                 print("Выход из эмулятора.")
                 break
-            elif command == "ls":
-                print(f"Команда 'ls'. Аргументы: {args}")
-            elif command == "cd":
-                print(f"Команда 'cd'. Аргументы: {args}")
-            else:
-                print(f"Ошибка: неизвестная команда '{command}'.")
 
 def main():
     """Основная функция с парсингом аргументов командной строки"""
